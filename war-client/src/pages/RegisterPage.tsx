@@ -45,6 +45,7 @@ function RegisterPage() {
     } catch {
       setError("Something went wrong while creating the account.");
     }
+    
   };
 
   return (

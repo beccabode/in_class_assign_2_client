@@ -16,7 +16,7 @@ function LoginPage() {
     event.preventDefault();
     setError("");
 
-    try {
+    	try {
       const response = await sendRequest("/auth/login", "POST", {
         username,
         password,
