@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Card, GameState } from "../types/game";
+import type { Card, GameHistoryItem, GameState } from "../types/game";
 
 const suits = ["hearts", "diamonds", "clubs", "spades"] as const;
 
@@ -85,6 +85,17 @@ function getSuitColor(suit: Card["suit"]) {
   }
 
   return "black";
+}
+
+function saveGameToHistory(gameResult: GameHistoryItem) {
+  const existingHistory = localStorage.getItem("gameHistory");
+  const parsedHistory: GameHistoryItem[] = existingHistory
+    ? JSON.parse(existingHistory)
+    : [];
+
+  parsedHistory.unshift(gameResult);
+
+  localStorage.setItem("gameHistory", JSON.stringify(parsedHistory));
 }
 
 function GamePage() {
@@ -181,6 +192,15 @@ function GamePage() {
     status = "finished";
     gameWinner = "player";
   }
+
+  if (status === "finished" && gameWinner) {
+  saveGameToHistory({
+    id: crypto.randomUUID(),
+    rounds: game.round + 1,
+    result: gameWinner === "player" ? "win" : "loss",
+    finishedAt: new Date().toLocaleString(),
+  });
+}
 
   setDecks({
     player: newPlayerDeck,
