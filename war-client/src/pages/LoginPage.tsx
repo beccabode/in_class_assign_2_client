@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
-// import { sendRequest } from "../utils/api";
+import { sendRequest } from "../utils/api";
+import type { LoginResponse } from "../types/auth";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -16,24 +17,28 @@ function LoginPage() {
     setError("");
 
     try {
-      // TEMPORARY fake login for development
-      if (!username || !password) {
-        setError("Please enter username and password.");
+      const response = await sendRequest("/auth/login", "POST", {
+        username,
+        password,
+      });
+
+      const data: LoginResponse | { message: string } = await response.json();
+
+      if (!response.ok) {
+        if ("message" in data) {
+          setError(data.message);
+        } else {
+          setError("Login failed.");
+        }
         return;
       }
 
-      login("fake-token-123", { id: "1", username });
-      navigate("/dashboard");
-
-      // REAL VERSION LATER:
-      // const response = await sendRequest("/auth/login", "POST", { username, password });
-      // const data = await response.json();
-      // if (!response.ok) {
-      //   setError(data.message || "Login failed.");
-      //   return;
-      // }
-      // login(data.token, data.user);
-      // navigate("/dashboard");
+      if ("userId" in data) {
+        login(String(data.userId));
+        navigate("/dashboard");
+      } else {
+        setError("Login response did not include a user ID.");
+      }
     } catch {
       setError("Something went wrong while logging in.");
     }

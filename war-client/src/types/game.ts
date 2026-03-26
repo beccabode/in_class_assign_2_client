@@ -4,22 +4,18 @@ export interface Card {
   value: number;
 }
 
-export interface GameState {
-  id: string;
-  round: number;
-  playerCard: Card | null;
-  computerCard: Card | null;
-  playerStackCount: number;
-  computerStackCount: number;
-  roundWinner: "player" | "computer" | "tie" | null;
-  status: "in_progress" | "finished";
-  gameWinner: "player" | "computer" | null;
-  warPileCount: number;
+export interface PlayRoundResponse {
+  playerCard: Card;
+  computerCard: Card;
+  result: string;
+  rounds: number;
+  playerCount: number;
+  computerCount: number;
 }
 
 export interface GameHistoryItem {
-  id: string;
+  id?: number | string;
   rounds: number;
-  result: "win" | "loss";
+  result: string;
   finishedAt: string;
 }

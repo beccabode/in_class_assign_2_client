@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// import { sendRequest } from "../utils/api";
+import { sendRequest } from "../utils/api";
+import type { RegisterResponse } from "../types/auth";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -27,20 +28,20 @@ function RegisterPage() {
     }
 
     try {
-      // TEMPORARY fake register
-      setSuccessMessage("Account created successfully. Please log in.");
-      setTimeout(() => {
-        navigate("/");
-      }, 1000);
+      const response = await sendRequest("/auth/register", "POST", {
+        username,
+        password,
+      });
 
-      // REAL VERSION LATER:
-      // const response = await sendRequest("/auth/register", "POST", { username, password });
-      // const data = await response.json();
-      // if (!response.ok) {
-      //   setError(data.message || "Registration failed.");
-      //   return;
-      // }
-      // navigate("/");
+      const data: RegisterResponse | { message: string } = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Registration failed.");
+        return;
+      }
+
+      setSuccessMessage(data.message);
+      navigate("/");
     } catch {
       setError("Something went wrong while creating the account.");
     }

@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 function Navbar() {
-  const { user, logout, token } = useAuth();
+  const { userId, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -16,7 +16,7 @@ function Navbar() {
         <Link to="/">Login</Link>
         <Link to="/register">Register</Link>
 
-        {token && (
+        {userId && (
           <>
             <Link to="/dashboard">Dashboard</Link>
             <Link to="/game">Game</Link>
@@ -25,8 +25,8 @@ function Navbar() {
         )}
 
         <div style={{ marginLeft: "auto" }}>
-          {user && <span style={{ marginRight: "1rem" }}>Logged in as: {user.username}</span>}
-          {token && <button onClick={handleLogout}>Logout</button>}
+          {userId && <span style={{ marginRight: "1rem" }}>Logged in user ID: {userId}</span>}
+          {userId && <button onClick={handleLogout}>Logout</button>}
         </div>
       </div>
     </nav>

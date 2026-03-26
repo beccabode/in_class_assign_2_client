@@ -7,9 +7,9 @@ interface Props {
 }
 
 function ProtectedRoute({ children }: Props) {
-  const { token } = useAuth();
+  const { userId } = useAuth();
 
-  if (!token) {
+  if (!userId) {
     return <Navigate to="/" replace />;
   }
 
