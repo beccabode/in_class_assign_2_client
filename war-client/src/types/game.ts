@@ -5,12 +5,14 @@ export interface Card {
 }
 
 export interface PlayRoundResponse {
-  playerCard: Card;
-  computerCard: Card;
+  playerCard: number;
+  computerCard: number;
   result: string;
   rounds: number;
   playerCount: number;
   computerCount: number;
+  gameOver: boolean;
+  winner: "player" | "computer" | null;
 }
 
 export interface GameHistoryItem {

@@ -2,6 +2,18 @@ import { useEffect, useState } from "react";
 import { sendRequest } from "../utils/api";
 import type { PlayRoundResponse } from "../types/game";
 
+const getCardLabel = (value: number | undefined) => {
+  if (!value) return "No card";
+
+  const map: Record<number, string> = {
+    1: "A",
+    11: "J",
+    12: "Q",
+    13: "K",
+  };
+
+  return map[value] || value.toString();
+};
 function GamePage() {
   const [game, setGame] = useState<PlayRoundResponse | null>(null);
   const [error, setError] = useState("");
@@ -103,8 +115,8 @@ function GamePage() {
                 }}
               >
                 {game?.playerCard
-                  ? `${game.playerCard.rank} of ${game.playerCard.suit}`
-                  : "No card yet"}
+                ? getCardLabel(game.playerCard)
+                : "No card yet"}
               </div>
             </div>
 
@@ -126,8 +138,8 @@ function GamePage() {
                 }}
               >
                 {game?.computerCard
-                  ? `${game.computerCard.rank} of ${game.computerCard.suit}`
-                  : "No card yet"}
+                ? getCardLabel(game.computerCard)
+                : "No card yet"}
               </div>
             </div>
           </div>
@@ -135,18 +147,31 @@ function GamePage() {
           <div style={{ marginTop: "2rem" }}>
             {game?.result === "player" && <h3>You win this round!</h3>}
             {game?.result === "computer" && <h3>Computer wins this round!</h3>}
-            {game?.result === "tie" && <h3>WAR!</h3>}
+            {game?.result === "war-player" && (
+              <h3>WAR! You won after 3 face-down and 1 face-up.</h3>
+            )}
+            {game?.result === "war-computer" && (
+              <h3>WAR! Computer won after 3 face-down and 1 face-up.</h3>
+            )}
             {!game && <h3>Click below to start playing</h3>}
+
+            {game?.gameOver && game.winner === "player" && (
+              <h2>🎉 You collected all cards and won the game!</h2>
+            )}
+
+            {game?.gameOver && game.winner === "computer" && (
+              <h2>💻 The computer collected all cards and won the game.</h2>
+            )}
           </div>
 
           <div style={{ marginTop: "2rem" }}>
             <button
-              onClick={() => void playRound()}
-              disabled={loading}
-              style={{ padding: "1rem", fontSize: "16px" }}
-            >
-              {loading ? "Playing..." : "Flip Card"}
-            </button>
+            onClick={() => void playRound()}
+            disabled={loading || game?.gameOver}
+            style={{ padding: "1rem", fontSize: "16px" }}
+          >
+            {loading ? "Playing..." : game?.gameOver ? "Game Over" : "Flip Card"}
+          </button>
           </div>
         </>
       )}
