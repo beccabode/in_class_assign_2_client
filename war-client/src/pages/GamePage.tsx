@@ -11,8 +11,9 @@ function GamePage() {
   const userId = Number(localStorage.getItem("userId"));
 
   const suits = ["♠", "♥", "♦", "♣"];
+
+  // ✅ FIXED: Correct rank order for consistency with backend (Ace HIGH in logic)
   const ranks = [
-    "A",
     "2",
     "3",
     "4",
@@ -25,9 +26,12 @@ function GamePage() {
     "J",
     "Q",
     "K",
+    "A",
   ];
 
-  const formatCard = (card: number | { rank: string; suit: string } | null | undefined) => {
+  const formatCard = (
+    card: number | { rank: string; suit: string } | null | undefined
+  ) => {
     if (card === null || card === undefined) return null;
 
     // If backend already sends object (future-proof)
@@ -35,7 +39,7 @@ function GamePage() {
       return card;
     }
 
-    // If backend sends number (YOUR CURRENT CASE)
+    // Convert number → suit + rank
     const suit = suits[Math.floor(card / 13)];
     const rank = ranks[card % 13];
 
@@ -148,7 +152,9 @@ function GamePage() {
                   margin: "0 auto",
                 }}
               >
-                {playerCard ? `${playerCard.rank} of ${playerCard.suit}` : "No card yet"}
+                {playerCard
+                  ? `${playerCard.rank} of ${playerCard.suit}`
+                  : "No card yet"}
               </div>
             </div>
 
@@ -170,7 +176,9 @@ function GamePage() {
                   margin: "0 auto",
                 }}
               >
-                {computerCard ? `${computerCard.rank} of ${computerCard.suit}` : "No card yet"}
+                {computerCard
+                  ? `${computerCard.rank} of ${computerCard.suit}`
+                  : "No card yet"}
               </div>
             </div>
           </div>
@@ -197,12 +205,16 @@ function GamePage() {
 
           <div style={{ marginTop: "2rem" }}>
             <button
-            onClick={() => void playRound()}
-            disabled={loading || game?.gameOver}
-            style={{ padding: "1rem", fontSize: "16px" }}
-          >
-            {loading ? "Playing..." : game?.gameOver ? "Game Over" : "Flip Card"}
-          </button>
+              onClick={() => void playRound()}
+              disabled={loading || game?.gameOver}
+              style={{ padding: "1rem", fontSize: "16px" }}
+            >
+              {loading
+                ? "Playing..."
+                : game?.gameOver
+                ? "Game Over"
+                : "Flip Card"}
+            </button>
           </div>
         </>
       )}
