@@ -2,23 +2,45 @@ import { useEffect, useState } from "react";
 import { sendRequest } from "../utils/api";
 import type { PlayRoundResponse } from "../types/game";
 
-const getCardLabel = (value: number | undefined) => {
-  if (!value) return "No card";
-
-  const map: Record<number, string> = {
-    1: "A",
-    11: "J",
-    12: "Q",
-    13: "K",
-  };
-
-  return map[value] || value.toString();
-};
 function GamePage() {
   const [game, setGame] = useState<PlayRoundResponse | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+
+  const userId = Number(localStorage.getItem("userId"));
+
+  const suits = ["♠", "♥", "♦", "♣"];
+  const ranks = [
+    "A",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "J",
+    "Q",
+    "K",
+  ];
+
+  const formatCard = (card: number | { rank: string; suit: string } | null | undefined) => {
+    if (card === null || card === undefined) return null;
+
+    // If backend already sends object (future-proof)
+    if (typeof card === "object") {
+      return card;
+    }
+
+    // If backend sends number (YOUR CURRENT CASE)
+    const suit = suits[Math.floor(card / 13)];
+    const rank = ranks[card % 13];
+
+    return { rank, suit };
+  };
 
   useEffect(() => {
     const startGame = async (): Promise<void> => {
@@ -26,14 +48,18 @@ function GamePage() {
         setLoading(true);
         setError("");
 
-        const response = await sendRequest("/games/start", "POST");
-        const data: { message: string } = await response.json();
+        const response = await sendRequest("/games/start", "POST", {
+          userId,
+        });
+
+        const data = await response.json();
 
         if (!response.ok) {
           setError(data.message || "Could not start game.");
           return;
         }
 
+        setGame(data);
         setGameStarted(true);
       } catch {
         setError("Something went wrong while starting the game.");
@@ -43,22 +69,26 @@ function GamePage() {
     };
 
     void startGame();
-  }, []);
+  }, [userId]);
 
   const playRound = async (): Promise<void> => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await sendRequest("/games/play", "POST");
-      const data: PlayRoundResponse | { message: string } = await response.json();
+      const response = await sendRequest("/games/play", "POST", {
+        userId,
+      });
+
+      const data: PlayRoundResponse | { message: string } =
+        await response.json();
 
       if (!response.ok) {
         if ("message" in data) {
-            setError(data.message);
-          } else {
-            setError("Could not play round");
-          }
+          setError(data.message);
+        } else {
+          setError("Could not play round");
+        }
         return;
       }
 
@@ -69,6 +99,9 @@ function GamePage() {
       setLoading(false);
     }
   };
+
+  const playerCard = formatCard(game?.playerCard);
+  const computerCard = formatCard(game?.computerCard);
 
   return (
     <div
@@ -100,6 +133,7 @@ function GamePage() {
             <div>
               <h3>You</h3>
               <p>Cards: {game?.playerCount ?? 26}</p>
+
               <div
                 style={{
                   border: "2px solid black",
@@ -114,15 +148,14 @@ function GamePage() {
                   margin: "0 auto",
                 }}
               >
-                {game?.playerCard
-                ? getCardLabel(game.playerCard)
-                : "No card yet"}
+                {playerCard ? `${playerCard.rank} of ${playerCard.suit}` : "No card yet"}
               </div>
             </div>
 
             <div>
               <h3>Computer</h3>
               <p>Cards: {game?.computerCount ?? 26}</p>
+
               <div
                 style={{
                   border: "2px solid black",
@@ -137,9 +170,7 @@ function GamePage() {
                   margin: "0 auto",
                 }}
               >
-                {game?.computerCard
-                ? getCardLabel(game.computerCard)
-                : "No card yet"}
+                {computerCard ? `${computerCard.rank} of ${computerCard.suit}` : "No card yet"}
               </div>
             </div>
           </div>
